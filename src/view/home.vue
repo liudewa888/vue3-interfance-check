@@ -1,5 +1,6 @@
 <template>
   <div class="web-main">
+    <h1>90度幸福定制版</h1>
     <el-input type="textarea" class="textarea" placeholder="输入手机号，多个换行输入" v-model="phone" rows="7" />
     <div class="date">
       <button @click="subDay">前一天</button>
@@ -10,9 +11,16 @@
     <p class="num">搜索结果：共{{ total }}个</p>
     <div class="result">
       <div class="content" v-for="item in formData">
-        <p>{{ item.date }} 数量: {{ item.list.length }}</p>
+        <div class="title">
+          <span>数量: {{ item.date }}</span>
+          <span>数量: {{ item.num }}</span>
+        </div>
         <ul class="list">
-          <li v-for=" item  in  item.list">{{ item }}</li>
+          <li v-for=" item  in  item.list">
+            <span>{{ item.phone }} </span>
+            <span>{{ item.name }} </span>
+            <span :class="item.num > 1 ? 'red' : ''" class="num">{{ item.num }} </span>
+          </li>
         </ul>
       </div>
     </div>
@@ -22,8 +30,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import { ElInput, ElMessage, ElDatePicker } from 'element-plus'
 import dayjs from 'dayjs'
-import { ElMessage } from 'element-plus'
 import { findWinnerApi } from '../api/home.js'
 const now = dayjs()
 let dateTemp = now.subtract(1, 'day').format('YYYY-MM-DD')
@@ -48,7 +56,10 @@ const addDay = () => {
 }
 const search = () => {
   total.value = "***"
-  if (!phone.value) return;
+  if (!phone.value) {
+    ElMessage.error('手机号不能为空! ')
+    return
+  };
   const phones = phone.value.split('\n')
   const isPhone = phones.every(item => {
     return isValidPhoneNumber(item)
@@ -63,7 +74,11 @@ const search = () => {
   findWinnerApi(data).then((res) => {
     let num = 0
     res.data.forEach(item => {
-      num += item.list.length
+      const tempNum = item.list.reduce((a, b) => {
+        return a + b.num
+      }, 0)
+      item.num = tempNum
+      num += tempNum
     })
     total.value = num
     formData.value = res.data
@@ -118,13 +133,31 @@ const search = () => {
 
     .content {
       border-bottom: 2px dashed #ddd;
-    }
 
-    .list {
-      display: flex;
+      .title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+      }
 
-      >li {
-        margin-right: 8px;
+      .list {
+        width: 100%;
+
+        li {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          font-size: 12px;
+
+          .num {
+            font-size: 14px;
+          }
+
+          .red {
+            color: red;
+          }
+        }
       }
     }
   }

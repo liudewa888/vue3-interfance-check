@@ -8,15 +8,15 @@ const { writeFile, readdir, readFile } = require("fs/promises");
 const BASE_URL = "https://winners.gzhotelgroup.com/api/Winner";
 
 const app = express();
-app.use((req, res, next) => {
-  if (req.url.includes("/find")) {
-    req.url = req.url.replace("/find", "");
-  }
-  if (req.url.includes("/api")) {
-    req.url = req.url.replace("/api", "");
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (req.url.includes("/find")) {
+//     req.url = req.url.replace("/find", "");
+//   }
+//   if (req.url.includes("/api")) {
+//     req.url = req.url.replace("/api", "");
+//   }
+//   next();
+// });
 app.use(express.static("./dist"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -92,7 +92,13 @@ async function RFile(date) {
   const data = JSON.parse(text);
   const map = new Map();
   data.forEach((item) => {
-    map.set(item.mobile, item.name);
+    if (map.has(item.mobile)) {
+      const num = map.get(item.mobile).num;
+      const name = map.get(item.mobile).name;
+      map.set(item.mobile, { num: num + 1, name });
+    } else {
+      map.set(item.mobile, { name: item.name, num: 1 });
+    }
   });
   return map;
 }
@@ -108,7 +114,8 @@ async function findWinner(date, phones) {
     phones.forEach((item) => {
       const phone = maskPhoneNumber(item);
       if (map.has(phone)) {
-        result.list.push(item);
+        const user = map.get(phone);
+        result.list.push({ phone, num: user.num, name: user.name });
       }
     });
     result.code = 1;
