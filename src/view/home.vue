@@ -1,7 +1,7 @@
 <template>
   <div class="web-main">
     <h1>90度幸福定制版</h1>
-    <el-input type="textarea" class="textarea" placeholder="输入手机号，多个换行输入" v-model="phone" rows="7" />
+    <el-input type="textarea" class="textarea" placeholder="输入手机号，多个换行输入" v-model="phone" rows="7" resize="none" />
     <div class="date">
       <button @click="subDay">前一天</button>
       <el-date-picker v-model="date" type="date" value-format="YYYY-MM-DD" placeholder="请选择日期" size="large" />
