@@ -50,7 +50,7 @@ function getRemoteDate(date) {
   const data = {
     joinDate: date,
     Start: 0,
-    Length: 3000,
+    Length: 20000,
   };
   return request.post(BASE_URL, data);
 }
@@ -104,13 +104,14 @@ async function RFile(date) {
 }
 
 async function findWinner(date, phones) {
-  const result = { date, list: [], code: 0 };
+  const result = { date, list: [], total: 0, code: 0 };
   const hasF = await hasFile(date);
   if (!hasF) {
     await WFile(date);
   }
   if (hasF) {
     const map = await RFile(date);
+    result.total = map.size
     phones.forEach((item) => {
       const phone = maskPhoneNumber(item);
       if (map.has(phone)) {
@@ -125,7 +126,7 @@ async function findWinner(date, phones) {
 // token生成
 function generateAccessToken(user, key) {
   return jwt.sign(user, key, {
-    expiresIn: "1h",
+    expiresIn: "1d",
   });
 }
 
