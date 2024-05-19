@@ -42,7 +42,6 @@ function processResponse(response) {
     if (response.data.code === 409) {
       localStorage.removeItem("token");
       router.push("/login");
-      return Promise.reject({ msg: "请重新登录" });
     }
     // 网络异常处理
     if (!navigator.onLine) {

@@ -164,7 +164,7 @@ app.post("/admin/login", async (req, res) => {
     return data.uname === item.uname && data.password === item.password;
   });
   if (!user1) {
-    return user1.send(responseFormat(409, [], "用户名或密码错误"));
+    return res.send(responseFormat(409, [], "用户名或密码错误"));
   }
   const user = { uname: data.uname };
   const token_key = data.uname + getTimeSpan();
