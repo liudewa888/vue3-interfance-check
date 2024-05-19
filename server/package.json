@@ -1,5 +1,5 @@
 {
-  "name": "moda-server",
+  "name": "interfance-server",
   "version": "0.1.0",
   "description": "",
   "main": "app.js",
@@ -11,10 +11,8 @@
   "dependencies": {
     "axios": "^1.6.5",
     "compression": "^1.7.4",
-    "config": "^3.3.11",
     "express": "^4.17.2",
-    "jsonwebtoken": "^8.5.1",
-    "mysql": "^2.18.1"
+    "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"

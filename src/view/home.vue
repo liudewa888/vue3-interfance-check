@@ -12,7 +12,8 @@
     <div class="result">
       <div class="content" v-for="item in formData">
         <div class="title">
-          <span>数量: {{ item.date }}</span>
+          <span>日期: {{ item.date }}</span>
+          <span>总: {{ item.total }}</span>
           <span>数量: {{ item.num }}</span>
         </div>
         <ul class="list">
