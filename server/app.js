@@ -77,6 +77,7 @@ async function WFile(date) {
       return {
         name: item.name,
         mobile: item.mobile,
+        idNo: item.idNo,
       };
     });
     writeDataByDate(date, result);
@@ -93,11 +94,11 @@ async function RFile(date) {
   const map = new Map();
   data.forEach((item) => {
     if (map.has(item.mobile)) {
-      const num = map.get(item.mobile).num;
-      const name = map.get(item.mobile).name;
-      map.set(item.mobile, { num: num + 1, name });
+      const obj = map.get(item.mobile);
+      const num = obj.num;
+      map.set(item.mobile, { ...obj, num: num + 1 });
     } else {
-      map.set(item.mobile, { name: item.name, num: 1 });
+      map.set(item.mobile, { name: item.name, num: 1, idNo: item.idNo });
     }
   });
   return map;
@@ -111,12 +112,12 @@ async function findWinner(date, phones) {
   }
   if (hasF) {
     const map = await RFile(date);
-    result.total = map.size
+    result.total = map.size;
     phones.forEach((item) => {
       const phone = maskPhoneNumber(item);
       if (map.has(phone)) {
         const user = map.get(phone);
-        result.list.push({ phone, num: user.num, name: user.name });
+        result.list.push({ ...user, phone });
       }
     });
     result.code = 1;

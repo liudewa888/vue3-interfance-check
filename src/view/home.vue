@@ -20,6 +20,7 @@
           <li v-for=" item  in  item.list">
             <span>{{ item.phone }} </span>
             <span>{{ item.name }} </span>
+            <span>{{ item.idNo }} </span>
             <span :class="item.num > 1 ? 'red' : ''" class="num">{{ item.num }} </span>
           </li>
         </ul>
