@@ -2,7 +2,6 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const compression = require("compression");
 const axios = require("axios");
-
 const { writeFile, readdir, readFile } = require("fs/promises");
 
 const BASE_URL = "https://winners.gzhotelgroup.com/api/Winner";
@@ -46,10 +45,10 @@ request.interceptors.response.use(
   }
 );
 
-function getRemoteDate(date) {
+function getRemoteDate(date, Start = 0) {
   const data = {
     joinDate: date,
-    Start: 0,
+    Start,
     Length: 20000,
   };
   return request.post(BASE_URL, data);
@@ -57,7 +56,9 @@ function getRemoteDate(date) {
 
 function writeDataByDate(date, data) {
   if (!data.length) return;
-  writeFile(`./data/${date}.json`, JSON.stringify(data)).then(() => {
+  const path = `./data/${date}.json`;
+  const res = JSON.stringify(data);
+  writeFile(path, res).then(() => {
     console.log(date + ".json 写入完成");
   });
 }
@@ -69,19 +70,33 @@ async function hasFile(date) {
 
 async function WFile(date) {
   const hasJson = await hasFile(date);
+  let data = [];
   if (hasJson) return;
-  const { data } = await getRemoteDate(date);
-  console.log(date, data.totalCount);
-  if (data && data.winners) {
-    const result = data.winners.map((item) => {
-      return {
-        name: item.name,
-        mobile: item.mobile,
-        idNo: item.idNo,
-      };
-    });
-    writeDataByDate(date, result);
+  const { data: data1 } = await getRemoteDate(date);
+  const winners1 = data1.winners;
+  const len = winners1.length;
+  console.log("data1", len);
+  const total = data1.totalCount;
+  data = data.concat(winners1);
+  if (len < total) {
+    const { data: data2 } = await getRemoteDate(date, len - 1);
+    const winners2 = data2.winners;
+    data = data.concat(winners2);
   }
+  if (data.length !== total) {
+    console.log("采集数据源数量有误", data.length);
+    return;
+  }
+
+  const result = data.map((item) => {
+    return {
+      name: item.name,
+      mobile: item.mobile,
+      idNo: item.idNo,
+    };
+  });
+  writeDataByDate(date, result);
+  return true;
 }
 
 function maskPhoneNumber(phoneNumber) {
@@ -91,6 +106,7 @@ function maskPhoneNumber(phoneNumber) {
 async function RFile(date) {
   const text = await readFile(`./data/${date}.json`);
   const data = JSON.parse(text);
+  const total = data.length;
   const map = new Map();
   data.forEach((item) => {
     if (map.has(item.mobile)) {
@@ -101,18 +117,19 @@ async function RFile(date) {
       map.set(item.mobile, { name: item.name, num: 1, idNo: item.idNo });
     }
   });
-  return map;
+  return { map, total };
 }
 
 async function findWinner(date, phones) {
   const result = { date, list: [], total: 0, code: 0 };
   const hasF = await hasFile(date);
   if (!hasF) {
-    await WFile(date);
+    const res = await WFile(date);
+    if (!res) return;
   }
   if (hasF) {
-    const map = await RFile(date);
-    result.total = map.size;
+    const { map, total } = await RFile(date);
+    result.total = total;
     phones.forEach((item) => {
       const phone = maskPhoneNumber(item);
       if (map.has(phone)) {
@@ -127,7 +144,7 @@ async function findWinner(date, phones) {
 // token生成
 function generateAccessToken(user, key) {
   return jwt.sign(user, key, {
-    expiresIn: "1d",
+    expiresIn: "8h",
   });
 }
 
@@ -214,6 +231,9 @@ app.post("/findWinner", authenticateToken, async (req, res) => {
   const data = req.body;
   const result = [];
   const res1 = await findWinner(data.date, data.phones);
+  if (!res1) {
+    return res.send(responseFormat(500, null, "采集数据源数量有误"));
+  }
   if (res1.code) {
     result.push(res1);
   }

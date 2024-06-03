@@ -36,7 +36,7 @@ function processResponse(response) {
     if (response.data.code === 401) {
       localStorage.removeItem("token");
       router.push("/login");
-      return Promise.reject({ msg: "token失效,请重新登录" });
+      // return Promise.reject({ msg: "token失效,请重新登录" });
     }
     // 登录token失效
     if (response.data.code === 409) {
